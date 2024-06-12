@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace JwtRoleAuthentication.Controllers;
 
-[ApiVersion( 1.0 )]
 [ApiController]
 [Route("api/[controller]" )]
 public class PagesController : ControllerBase
@@ -19,7 +18,7 @@ public class PagesController : ControllerBase
         _dbContext = dbContext;
     }
     
-    [Authorize (Roles = "Admin")]
+    [Authorize]
     [HttpPost("new")]
     public async Task<ActionResult<Page>> CreatePage(PageDto pageDto)
     {

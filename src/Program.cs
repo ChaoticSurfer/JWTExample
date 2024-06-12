@@ -51,22 +51,19 @@ builder.Services.AddRouting(options => options.LowercaseUrls = true);
 // Add DB Contexts
 // Move the connection string to user secrets for release
 builder.Services.AddDbContext<ApplicationDbContext>(opt =>
-    opt.UseNpgsql("Host=localhost;Database=postgres;Username=postgres;Password=devpass"));
+    opt.UseSqlite("Data Source = database.db"));
 
 // Register our TokenService dependency
 builder.Services.AddScoped<TokenService, TokenService>();
 
 // Support string to enum conversions
-builder.Services.AddControllers().AddJsonOptions(opt =>
-{
-    opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-});
+builder.Services.AddControllers();
 
 
 // Specify identity requirements
 // Must be added before .AddAuthentication otherwise a 404 is thrown on authorized endpoints
 builder.Services
-    .AddIdentity<ApplicationUser, IdentityRole>(options =>
+    .AddIdentityCore<ApplicationUser>(options =>
     {
         options.SignIn.RequireConfirmedAccount = false;
         options.User.RequireUniqueEmail = true;
@@ -75,7 +72,6 @@ builder.Services
         options.Password.RequireNonAlphanumeric = false;
         options.Password.RequireUppercase = false;
     })
-    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 

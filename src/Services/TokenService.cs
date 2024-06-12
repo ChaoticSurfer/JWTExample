@@ -7,15 +7,18 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 
 public class TokenService
 {
     private const int ExpirationMinutes = 60;
     private readonly ILogger<TokenService> _logger;
+    private readonly IConfiguration _configuration;
 
-    public TokenService(ILogger<TokenService> logger)
+    public TokenService(ILogger<TokenService> logger, IConfiguration configuration)
     {
         _logger = logger;
+        _configuration = configuration;
     }
 
     public string CreateToken(ApplicationUser user)
@@ -34,30 +37,26 @@ public class TokenService
     }
 
     private JwtSecurityToken CreateJwtToken(List<Claim> claims, SigningCredentials credentials,
-        DateTime expiration) =>
+    DateTime expiration) =>
         new(
-            new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["ValidIssuer"],
-            new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["ValidAudience"],
+             _configuration["JwtTokenSettings:ValidIssuer"],
+              _configuration["JwtTokenSettings:ValidAudience"],
             claims,
             expires: expiration,
             signingCredentials: credentials
         );
 
     private List<Claim> CreateClaims(ApplicationUser user)
-    {
-        var jwtSub = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["JwtRegisteredClaimNamesSub"];
-        
+    {        
         try
         {
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, jwtSub),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()),
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role.ToString())
             };
             
             return claims;
@@ -71,8 +70,8 @@ public class TokenService
 
     private SigningCredentials CreateSigningCredentials()
     {
-        var symmetricSecurityKey = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["SymmetricSecurityKey"];
-        
+        var symmetricSecurityKey = _configuration["JwtTokenSettings:SymmetricSecurityKey"];
+
         return new SigningCredentials(
             new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(symmetricSecurityKey)

@@ -34,14 +34,14 @@ public class UsersController : ControllerBase
         }
 
         var result = await _userManager.CreateAsync(
-            new ApplicationUser { UserName = request.Username, Email = request.Email, Role = request.Role },
+            new ApplicationUser { UserName = request.Username, Email = request.Email },
             request.Password!
         );
         
         if (result.Succeeded)
         {
             request.Password = "";
-            return CreatedAtAction(nameof(Register), new { email = request.Email, role = Role.User }, request);
+            return CreatedAtAction(nameof(Register), new { email = request.Email }, request);
         }
 
         foreach (var error in result.Errors)

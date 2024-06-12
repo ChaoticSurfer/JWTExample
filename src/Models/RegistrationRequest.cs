@@ -14,5 +14,4 @@ public class RegistrationRequest
     [Required]
     public string? Password { get; set; }
 
-    public Role Role { get; set; } = Role.User;
 }
