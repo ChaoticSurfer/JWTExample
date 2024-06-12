@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 
 public class TokenService
 {
-    private const int ExpirationMinutes = 60;
+    public const int ExpirationMinutes = 60;
     private readonly ILogger<TokenService> _logger;
     private readonly IConfiguration _configuration;
 
